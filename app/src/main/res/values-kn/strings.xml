@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ಕರುನಾಡ ಕಲೆ</string>
+    <string name="nav_home">ಮುಖಪುಟ</string>
+    <string name="nav_explorer">ಅನ್ವೇಷಕ</string>
+    <string name="nav_map">ಪಾರಂಪರಿಕ ನಕ್ಷೆ</string>
+    <string name="nav_feed">ಕಲಾ ಫೀಡ್</string>
+    <string name="call_artisan">ಕಲಾವಿದರಿಗೆ ಕರೆ ಮಾಡಿ</string>
+    <string name="view_details">ವಿವರಗಳನ್ನು ನೋಡಿ</string>
+    <string name="ai_loading">ಸಾಂಸ್ಕೃತಿಕ ಇತಿಹಾಸಕ್ಕಾಗಿ ಜೆಮಿನಿಯನ್ನು ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ…</string>
+    <string name="error_ai">ಸಾಂಸ್ಕೃತಿಕ ವಿವರಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</string>
+    <string name="workshop_signup">ಕಾರ್ಯಾಗಾರ ನೋಂದಣಿ</string>
+</resources>

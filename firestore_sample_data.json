@@ -1,0 +1,46 @@
+{
+  "artisans": {
+    "artisan_1": {
+      "name": "Shiva Kumar",
+      "artForm": "Yakshagana",
+      "district": "Udupi",
+      "imageUrl": "https://images.unsplash.com/photo-1626103659333-727a36230869?q=80&w=600",
+      "description": "Veteran Yakshagana performer with 30 years of experience in Tenkutittu style.",
+      "latitude": 13.3409,
+      "longitude": 74.7421,
+      "phone": "+919876543210"
+    },
+    "artisan_2": {
+      "name": "Rathnamma",
+      "artForm": "Channapatna Toys",
+      "district": "Ramanagara",
+      "imageUrl": "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?q=80&w=600",
+      "description": "Award-winning toy maker specializing in eco-friendly lacquerware.",
+      "latitude": 12.6521,
+      "longitude": 77.2104,
+      "phone": "+919876543211"
+    }
+  },
+  "art_forms": {
+    "yakshagana": {
+      "name": "Yakshagana",
+      "category": "Performing Art",
+      "shortDesc": "Classical dance-drama of Coastal Karnataka",
+      "history": "Yakshagana dates back to the 11th century...",
+      "origin": "Udupi/Dakshina Kannada",
+      "imageUrl": "https://images.unsplash.com/photo-1626103659333-727a36230869?q=80&w=800"
+    }
+  },
+  "workshops": {
+    "workshop_1": {
+      "name": "Toy Making Workshop",
+      "artForm": "Channapatna Toys",
+      "district": "Ramanagara",
+      "imageUrl": "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?q=80&w=600",
+      "description": "A 2-day hands-on workshop on wood turning and lacquering.",
+      "latitude": 12.6521,
+      "longitude": 77.2104,
+      "phone": "+919876543211"
+    }
+  }
+}

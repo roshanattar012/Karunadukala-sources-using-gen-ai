@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Karunada Kala</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_explorer">Explorer</string>
+    <string name="nav_map">Heritage Map</string>
+    <string name="nav_feed">Art Feed</string>
+    <string name="call_artisan">Tap to Call Artisan</string>
+    <string name="view_details">View Details</string>
+    <string name="ai_loading">Consulting Gemini for cultural history…</string>
+    <string name="error_ai">Could not load cultural details.</string>
+    <string name="workshop_signup">Workshop Sign-up</string>
+</resources>
