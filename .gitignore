@@ -77,3 +77,4 @@ node_modules/
 .gradle-home/
 .idea/
 local.properties
+*.hprof
