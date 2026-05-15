@@ -36,14 +36,38 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signUp(email: String, password: String) {
+    fun signUp(email: String, password: String, displayName: String? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
-                repository.signUp(email, password)
+                repository.signUp(email, password, displayName)
             } catch (e: Exception) {
                 _error.value = e.localizedMessage ?: "Registration failed"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateProfile(displayName: String) {
+        viewModelScope.launch {
+            try {
+                repository.updateProfile(displayName)
+            } catch (e: Exception) {
+                _error.value = "Failed to update profile: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                repository.signInWithGoogle(idToken)
+            } catch (e: Exception) {
+                _error.value = e.localizedMessage ?: "Google Sign-In failed"
             } finally {
                 _isLoading.value = false
             }

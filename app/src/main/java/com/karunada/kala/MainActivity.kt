@@ -3,6 +3,8 @@ package com.karunada.kala
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -48,66 +50,31 @@ fun MainContainer(authViewModel: AuthViewModel = hiltViewModel()) {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
 
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                        label = { Text("Home") },
-                        selected = currentRoute == "home",
-                        onClick = {
-                            navController.navigate("home") {
-                                popUpTo("home") { inclusive = true }
-                            }
-                        }
+                    val items = listOf(
+                        "home" to Icons.Default.Home,
+                        "explorer" to Icons.Default.Star,
+                        "map" to Icons.Default.Place,
+                        "feed" to Icons.Default.List,
+                        "shop" to Icons.Default.ShoppingCart,
+                        "profile" to Icons.Default.AccountCircle
                     )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                        label = { Text("Explorer") },
-                        selected = currentRoute == "explorer",
-                        onClick = {
-                            navController.navigate("explorer") {
-                                popUpTo("home")
+
+                    items.forEach { (route, icon) ->
+                        NavigationBarItem(
+                            icon = { Icon(icon, contentDescription = null) },
+                            label = { Text(route.replaceFirstChar { it.uppercase() }) },
+                            selected = currentRoute == route,
+                            onClick = {
+                                if (currentRoute != route) {
+                                    navController.navigate(route) {
+                                        popUpTo("home") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Place, contentDescription = null) },
-                        label = { Text("Map") },
-                        selected = currentRoute == "map",
-                        onClick = {
-                            navController.navigate("map") {
-                                popUpTo("home")
-                            }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.List, contentDescription = null) },
-                        label = { Text("Feed") },
-                        selected = currentRoute == "feed",
-                        onClick = {
-                            navController.navigate("feed") {
-                                popUpTo("home")
-                            }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
-                        label = { Text("Shop") },
-                        selected = currentRoute == "shop",
-                        onClick = {
-                            navController.navigate("shop") {
-                                popUpTo("home")
-                            }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
-                        label = { Text("Profile") },
-                        selected = currentRoute == "profile",
-                        onClick = {
-                            navController.navigate("profile") {
-                                popUpTo("home")
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -115,7 +82,11 @@ fun MainContainer(authViewModel: AuthViewModel = hiltViewModel()) {
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = { fadeIn(animationSpec = tween(300)) + slideInHorizontally { it / 2 } },
+            exitTransition = { fadeOut(animationSpec = tween(300)) + slideOutHorizontally { -it / 2 } },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) + slideInHorizontally { -it / 2 } },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) + slideOutHorizontally { it / 2 } }
         ) {
             composable("onboarding") { OnboardingScreen(navController) }
             composable("login") { LoginScreen(navController) }
@@ -125,6 +96,7 @@ fun MainContainer(authViewModel: AuthViewModel = hiltViewModel()) {
             composable("feed") { EventFeedScreen() }
             composable("shop") { MarketplaceScreen(navController) }
             composable("profile") { UserProfileScreen(navController) }
+            composable("saved") { SavedHeritageScreen(navController) }
             composable(
                 "detail/{siteId}",
                 arguments = listOf(navArgument("siteId") { type = NavType.StringType })

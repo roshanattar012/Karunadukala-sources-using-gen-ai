@@ -175,6 +175,11 @@ fun DetailScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
+                        if (aiExplanation?.startsWith("Error") == true || aiExplanation == null) {
+                            TextButton(onClick = { viewModel.retryAiExplanation() }) {
+                                Text("Retry ✨", color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
                     }
                 }
             }
@@ -183,22 +188,40 @@ fun DetailScreen(
 
             // Call Artisan Feature
             if (!currentSite.phone.isNullOrBlank()) {
-                Button(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_DIAL).apply {
-                            data = Uri.parse("tel:${currentSite.phone}")
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_DIAL).apply {
+                                data = Uri.parse("tel:${currentSite.phone}")
+                            }
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.Call, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Call", style = MaterialTheme.typography.titleMedium)
+                    }
+
+                    if (currentSite.heritageType == HeritageType.WORKSHOP) {
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Button(
+                            onClick = { navController.navigate("workshop?artForm=${currentSite.artForm}") },
+                            modifier = Modifier
+                                .weight(1.5f)
+                                .height(56.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Join Workshop", style = MaterialTheme.typography.titleMedium)
                         }
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(Icons.Default.Call, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("📞 Call Artisan", style = MaterialTheme.typography.titleMedium)
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }

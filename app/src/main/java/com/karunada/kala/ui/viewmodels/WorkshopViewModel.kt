@@ -2,17 +2,17 @@ package com.karunada.kala.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
+import com.karunada.kala.data.local.entities.BookingEntity
+import com.karunada.kala.data.repository.HeritageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class WorkshopViewModel @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val repository: HeritageRepository
 ) : ViewModel() {
 
     private val _isSubmitting = MutableStateFlow(false)
@@ -21,25 +21,35 @@ class WorkshopViewModel @Inject constructor(
     private val _submissionSuccess = MutableStateFlow(false)
     val submissionSuccess = _submissionSuccess.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
+
     fun registerForWorkshop(name: String, phone: String, email: String, artForm: String, message: String) {
         viewModelScope.launch {
             _isSubmitting.value = true
-            val data = hashMapOf(
-                "name" to name,
-                "phone" to phone,
-                "email" to email,
-                "artForm" to artForm,
-                "message" to message,
-                "timestamp" to com.google.firebase.Timestamp.now()
-            )
+            _error.value = null
+            
             try {
-                firestore.collection("workshop_registrations").add(data).await()
+                val booking = BookingEntity(
+                    name = name,
+                    phone = phone,
+                    email = email,
+                    artForm = artForm,
+                    message = message
+                )
+                
+                // HeritageRepository handles both local and remote sync
+                repository.addBooking(booking)
                 _submissionSuccess.value = true
             } catch (e: Exception) {
-                // Handle error
+                _error.value = "Registration failed: ${e.localizedMessage}. Please try again later."
             } finally {
                 _isSubmitting.value = false
             }
         }
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }

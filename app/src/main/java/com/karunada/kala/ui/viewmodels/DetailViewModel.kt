@@ -32,6 +32,7 @@ class DetailViewModel @Inject constructor(
 
     fun loadSite(siteId: String) {
         analyticsService.logEvent("site_viewed", mapOf("site_id" to siteId))
+        _aiExplanation.value = null // Clear old insights
         viewModelScope.launch {
             repository.isItemSaved(siteId).collect {
                 _isSaved.value = it
@@ -61,5 +62,9 @@ class DetailViewModel @Inject constructor(
         viewModelScope.launch {
             repository.toggleSave(currentSite.id, "ARTISAN", _isSaved.value)
         }
+    }
+
+    fun retryAiExplanation() {
+        _site.value?.let { fetchAiExplanation(it.artForm) }
     }
 }

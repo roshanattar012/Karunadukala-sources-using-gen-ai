@@ -1,22 +1,29 @@
 package com.karunada.kala.ui.screens
 
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -82,98 +89,191 @@ fun EventFeedScreen(viewModel: HeritageViewModel = hiltViewModel()) {
 @Composable
 fun EventCard(event: ArtEvent) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     
-    // Stabilize the player instance tied to the event ID
+    val youtubeId = remember(event.videoUrl) { extractYoutubeId(event.videoUrl) }
+    
+    if (youtubeId != null) {
+        YouTubeCard(event, youtubeId)
+    } else {
+        ExoPlayerCard(event)
+    }
+}
+
+fun extractYoutubeId(url: String): String? {
+    return when {
+        url.contains("youtu.be/") -> url.substringAfterLast("/")
+        url.contains("v=") -> url.substringAfterLast("v=").substringBefore("&")
+        url.contains("embed/") -> url.substringAfterLast("embed/")
+        else -> null
+    }
+}
+
+@Composable
+fun YouTubeCard(event: ArtEvent, youtubeId: String) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp)
+    ) {
+        Column {
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        webViewClient = WebViewClient()
+                        webChromeClient = WebChromeClient()
+                        loadUrl("https://www.youtube.com/embed/$youtubeId")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            )
+            EventCardDetails(event)
+        }
+    }
+}
+
+@OptIn(UnstableApi::class)
+@Composable
+fun ExoPlayerCard(event: ArtEvent) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // Create player and manage its lifecycle
+    var isPlaying by remember { mutableStateOf(false) }
+    
     val exoPlayer = remember(event.id) {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(event.videoUrl))
             prepare()
-            playWhenReady = false // Auto-play can be handled with Visibility Tracking
             repeatMode = ExoPlayer.REPEAT_MODE_ONE
+            playWhenReady = false
         }
     }
 
-    DisposableEffect(event.id) {
-        onDispose { exoPlayer.release() }
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            when (event) {
+                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> exoPlayer.pause()
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> {}
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            exoPlayer.release()
+        }
     }
 
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Column {
-            // Video player with fixed aspect ratio for stability
-            AndroidView(
-                factory = {
-                    PlayerView(context).apply {
-                        player = exoPlayer
-                        useController = true
-                        layoutParams = FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-            )
-
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = event.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = event.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 3
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Date and location row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.DateRange,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = event.date,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    if (event.location.isNotEmpty()) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Place,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.secondary
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = event.location,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary
+            Box(contentAlignment = Alignment.Center) {
+                AndroidView(
+                    factory = {
+                        PlayerView(context).apply {
+                            player = exoPlayer
+                            useController = true
+                            setShowNextButton(false)
+                            setShowPreviousButton(false)
+                            layoutParams = FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
                             )
                         }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp)
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                )
+                
+                if (!isPlaying) {
+                    IconButton(
+                        onClick = { 
+                            isPlaying = true
+                            exoPlayer.play()
+                        },
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(
+                            Icons.Default.PlayArrow, 
+                            contentDescription = "Play", 
+                            tint = Color.White,
+                            modifier = Modifier.size(40.dp)
+                        )
                     }
+                }
+            }
+            EventCardDetails(event)
+        }
+    }
+}
+
+@Composable
+fun EventCardDetails(event: ArtEvent) {
+    Column(modifier = Modifier.padding(14.dp)) {
+        Text(
+            text = event.title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = event.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Date and location row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = event.date,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            if (event.location.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Place,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = event.location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
         }

@@ -1,12 +1,16 @@
 package com.karunada.kala.data
 
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 
 enum class HeritageType {
     WORKSHOP, PERFORMANCE, ARTISAN
 }
 
+@IgnoreExtraProperties
 data class HeritageSite(
+    @get:Exclude
     val id: String = "",
     val name: String = "",
     val type: String = "", // "WORKSHOP", "EVENT", "ARTISAN"
@@ -27,7 +31,9 @@ data class HeritageSite(
     }
 }
 
+@IgnoreExtraProperties
 data class ArtForm(
+    @get:Exclude
     val id: String = "",
     val name: String = "",
     val category: String = "",
@@ -38,7 +44,9 @@ data class ArtForm(
     val videoUrl: String = ""
 )
 
+@IgnoreExtraProperties
 data class Artisan(
+    @get:Exclude
     val id: String = "",
     val name: String = "",
     val artForm: String = "",
@@ -47,7 +55,9 @@ data class Artisan(
     val type: HeritageType = HeritageType.ARTISAN
 )
 
+@IgnoreExtraProperties
 data class ArtEvent(
+    @get:Exclude
     val id: String = "",
     val title: String = "",
     val description: String = "",
@@ -56,7 +66,9 @@ data class ArtEvent(
     val videoUrl: String = ""
 )
 
+@IgnoreExtraProperties
 data class Product(
+    @get:Exclude
     val id: String = "",
     val name: String = "",
     val price: Double = 0.0,

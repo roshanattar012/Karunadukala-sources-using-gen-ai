@@ -11,9 +11,10 @@ import com.karunada.kala.data.local.entities.*
         ArtFormEntity::class,
         EventEntity::class,
         ProductEntity::class,
-        SavedEntity::class
+        SavedEntity::class,
+        BookingEntity::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

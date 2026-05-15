@@ -36,6 +36,7 @@ fun WorkshopSignupScreen(
 
     val submitted by viewModel.submissionSuccess.collectAsState()
     val isSubmitting by viewModel.isSubmitting.collectAsState()
+    val serverError by viewModel.error.collectAsState()
 
     // Validation states
     var nameError by remember { mutableStateOf(false) }
@@ -48,7 +49,7 @@ fun WorkshopSignupScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header
+        // ... (Header code) ...
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -87,6 +88,20 @@ fun WorkshopSignupScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            if (serverError != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = serverError!!,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
             // Name
             OutlinedTextField(
                 value = name,

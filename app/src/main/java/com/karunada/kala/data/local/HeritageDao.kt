@@ -82,4 +82,11 @@ interface HeritageDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM saved_items WHERE id = :id)")
     fun isItemSaved(id: String): Flow<Boolean>
+
+    // Bookings
+    @Query("SELECT * FROM bookings ORDER BY timestamp DESC")
+    fun getAllBookings(): Flow<List<BookingEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBooking(booking: BookingEntity)
 }
